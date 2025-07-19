@@ -21,6 +21,7 @@ function satvisSetup(customConfig = {}) {
   if (window.location.href.includes("satvis.space")) {
     Sentry.init({ dsn: "https://6c17c8b3e731026b3e9e0df0ecfc1b83@o294643.ingest.us.sentry.io/1541793" });
   }
+  console.log("Starting Satvis...");
 
   // Setup and init app
   const app = createApp(App);

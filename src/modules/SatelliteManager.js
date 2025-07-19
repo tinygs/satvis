@@ -29,13 +29,15 @@ export class SatelliteManager {
 
   addFromTleUrls(urlTagList) {
     // Initiate async download of all TLE URLs and update store afterwards
+    console.log(`Adding TLEs from URLs`);
     const promises = urlTagList.map(([url, tags]) => this.addFromTleUrl(url, tags, false));
     Promise.all(promises).then(() => this.updateStore());
   }
 
   addFromTleUrl(url, tags, updateStore = true) {
+    console.log(`Fetching TinyGS TLEs from ${url} with tags: ${tags.join(", ")}`);
     return fetch(url, {
-      mode: "no-cors",
+      // mode: "no-cors",
     }).then((response) => {
       if (!response.ok) {
         throw Error(response.statusText);

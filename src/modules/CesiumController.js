@@ -46,10 +46,30 @@ export class CesiumController {
 
     // Cesium default settings
     this.viewer.clock.shouldAnimate = true;
-    this.viewer.scene.globe.enableLighting = true;
+    this.viewer.scene.globe.enableLighting = false;
     this.viewer.scene.highDynamicRange = true;
     this.viewer.scene.maximumRenderTimeChange = 1 / 30;
     this.viewer.scene.requestRenderMode = true;
+
+    // Apply camera config from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const latitude = parseFloat(urlParams.get("lat"));
+    const longitude = parseFloat(urlParams.get("lon"));
+    const altitude = parseFloat(urlParams.get("alt")) || 400000;
+    const roll = parseFloat(urlParams.get("roll")) || 0;
+    const pitch = parseFloat(urlParams.get("pitch")) || -90;
+    const heading = parseFloat(urlParams.get("heading")) || 0;
+
+    if (!Number.isNaN(latitude) && !Number.isNaN(longitude)) {
+      this.viewer.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, altitude),
+        orientation: {
+          heading: Cesium.Math.toRadians(heading),
+          pitch: Cesium.Math.toRadians(pitch),
+          roll: Cesium.Math.toRadians(roll),
+        },
+      });
+    }
 
     // Cesium Performance Tools
     // this.viewer.scene.debugShowFramesPerSecond = true;

@@ -344,7 +344,7 @@ export class SatelliteComponentCollection extends CesiumComponentCollection {
     this.createCesiumSatelliteEntity("Ground track", "corridor", corridor);
   }
 
-  createCone(fov = 10) {
+  createCone(fov = 65) {
     if (this.props.orbit.orbitalPeriod > 60 * 2) {
       // Cone graphic unavailable for non-LEO satellites
       return;
@@ -352,7 +352,7 @@ export class SatelliteComponentCollection extends CesiumComponentCollection {
     const entity = new Cesium.Entity();
     entity.addProperty("conicSensor");
     entity.conicSensor = new CesiumSensorVolumes.ConicSensorGraphics({
-      radius: 1000000,
+      radius: 3000000,
       innerHalfAngle: Cesium.Math.toRadians(0),
       outerHalfAngle: Cesium.Math.toRadians(fov),
       lateralSurfaceMaterial: Cesium.Color.GOLD.withAlpha(0.15),

@@ -2,7 +2,7 @@ import satvisSetup from "./app";
 
 const { cc } = satvisSetup({
   sat: {
-    enabledTags: ["OT"],
+    enabledTags: ["OT", "TinyGS"],
     enabledComponents: ["Point", "Label", "Orbit", "Sensor cone"],
   },
   cesium: {
@@ -16,4 +16,5 @@ cc.sats.addFromTleUrls([
   ["data/tle/forest-3-launch.txt", ["FOREST-3"]],
   ["data/tle/otc.txt", ["OTC"]],
   ["data/tle/groups/iridium-NEXT.txt", ["IridiumNEXT"]],
+  ["https://api.tinygs.com/v1/tles.txt", ["TinyGS"]],
 ]);
