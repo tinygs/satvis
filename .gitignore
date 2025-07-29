@@ -7,3 +7,5 @@ cypress/videos/
 cypress/fixtures/
 cypress/support/
 report/
+
+context_portal/
