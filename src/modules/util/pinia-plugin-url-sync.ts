@@ -1,22 +1,31 @@
 import { PiniaPluginContext } from "pinia";
 
-export interface SyncConfigEntry {
-  name: String;           // Object name/path in pinia store
-  url?: String;           // Alternative name of url param, defaults to name
-  serialize?: Function;   // Convert state to url string
-  deserialize?: Function; // Convert url string to state
-  valid?: Function;       // Run validation function after deserialization to filter invalid values
-  default?: Any;          // Default value (removes this value from url)
+interface SyncConfigEntry {
+  name: string;           // Object name/path in pinia store
+  url?: string;           // Alternative name of url param, defaults to name
+  serialize?: (value: any) => string;   // Convert state to url string
+  deserialize?: (value: string) => any; // Convert url string to state
+  valid?: (value: any) => boolean;       // Run validation function after deserialization to filter invalid values
+  default?: any;          // Default value (removes this value from url)
 }
-const defaultSerialize = (v) => String(v);
-const defaultDeserialize = (v) => String(v);
 
-function resolve(path, obj, separator = ".") {
+interface StoreWithRouter {
+  $id: string;
+  defaults: Record<string, any>;
+  router: any;
+  customConfig: Record<string, Record<string, any>>;
+  [key: string]: any;
+}
+
+const defaultSerialize = (v: any): string => String(v);
+const defaultDeserialize = (v: string): any => String(v);
+
+function resolve(path: string, obj: any, separator = "."): any {
   const properties = Array.isArray(path) ? path : path.split(separator);
   return properties.reduce((prev, curr) => prev && prev[curr], obj);
 }
 
-function urlToState(store: Store, syncConfig: SyncConfigEntry[]): void {
+function urlToState(store: StoreWithRouter, syncConfig: SyncConfigEntry[]): void {
   const { router, customConfig } = store;
   const route = router.currentRoute.value;
   store.defaults = {};
@@ -26,7 +35,7 @@ function urlToState(store: Store, syncConfig: SyncConfigEntry[]): void {
     Object.entries(customConfig[store.$id]).forEach(([key, val]) => {
       store[key] = val;
     });
-  };
+  }
 
   syncConfig.forEach((config: SyncConfigEntry) => {
     const param = config.url || config.name;
@@ -41,8 +50,8 @@ function urlToState(store: Store, syncConfig: SyncConfigEntry[]): void {
     }
     try {
       console.info("Parse url param", param, route.query[param]);
-      const value = deserialize(query[param]);
-      if ("valid" in config && !config.valid(value)) {
+      const value = deserialize(query[param] as string);
+      if (config.valid && !config.valid(value)) {
         throw new TypeError("Validation failed");
       }
       // TODO: Resolve nested values
@@ -55,11 +64,15 @@ function urlToState(store: Store, syncConfig: SyncConfigEntry[]): void {
   });
 }
 
-function stateToUrl(store: Store, syncConfig: SyncConfigEntry[]): void {
+function stateToUrl(store: StoreWithRouter, syncConfig: SyncConfigEntry[]): void {
   const { router } = store;
-  const route = router.currentRoute.value;
 
-  const params = new URLSearchParams(location.search);
+  // Ensure defaults is initialized
+  if (!store.defaults) {
+    store.defaults = {};
+  }
+
+  const params = new URLSearchParams(window.location.search);
   syncConfig.forEach((config: SyncConfigEntry) => {
     const value = resolve(config.name, store);
     const param = config.url || config.name;
@@ -77,18 +90,19 @@ function stateToUrl(store: Store, syncConfig: SyncConfigEntry[]): void {
 
 function createUrlSync({ options, store }: PiniaPluginContext): void {
   // console.info("createUrlSync", options);
-  if (!options.urlsync?.enabled && !options.urlsync?.config) {
+  const urlsync = (options as any).urlsync;
+  if (!urlsync?.enabled && !urlsync?.config) {
     return;
   }
 
   // Set state from url params on page load
-  store.router.isReady().then(() => {
-    urlToState(store, options.urlsync.config);
+  (store as StoreWithRouter).router.isReady().then(() => {
+    urlToState(store as StoreWithRouter, urlsync.config);
   });
 
   // Subscribe to store updates and sync them to url params
   store.$subscribe(() => {
-    stateToUrl(store, options.urlsync.config);
+    stateToUrl(store as StoreWithRouter, urlsync.config);
   });
 }
 
