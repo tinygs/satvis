@@ -28,6 +28,7 @@
     border-collapse: collapse;
     border-radius: 6px;
     width: 100%;
+    font-size: 12px;
 }
 
 .ibt th, .ibt td {
